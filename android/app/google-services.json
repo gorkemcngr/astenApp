@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "744202850325",
+    "project_id": "asten-app",
+    "storage_bucket": "asten-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744202850325:android:4fd6bca0a11aec047b7e1c",
+        "android_client_info": {
+          "package_name": "com.gorkemcenger.flutter_asten_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "744202850325-8vgkb7u8l4bmdu46uvfmclsobptqmjr9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gorkemcenger.flutter_asten_app",
+            "certificate_hash": "c19ae9a138f5fd002c578575a0cfba3afea38460"
+          }
+        },
+        {
+          "client_id": "744202850325-dutn55ujihif2946mee08428qu948jg5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEjAOnuQBS_quOKRNIDc8_Q7YElfwOAAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "744202850325-dutn55ujihif2946mee08428qu948jg5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
