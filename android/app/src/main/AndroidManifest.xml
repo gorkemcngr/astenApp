@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gorkemcenger.flutter_asten_app">
+    <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="flutter_asten_app"
+        android:label="AstenCube"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
