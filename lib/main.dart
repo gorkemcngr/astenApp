@@ -1,53 +1,62 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_asten_app/auth_service.dart';
+import 'package:flutter_asten_app/blocs/deliveries/deliveries_bloc.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'SplashImage.dart';
+import 'blocs/costumersdetay/customers_detay_bloc.dart';
+import 'blocs/customers/customers_bloc.dart';
+import 'blocs/deliveriesdetay/deliveries_detay_bloc.dart';
+import 'blocs/orders/orders_bloc.dart';
+import 'blocs/ordersdetay/orders_detay_bloc.dart';
+import 'blocs/productDetay/products_detay_bloc.dart';
+import 'blocs/products/products_bloc.dart';
+import 'blocs/todayorders/today_orders_bloc.dart';
+import 'blocs/todayordersdetay/today_orders_detay_bloc.dart';
+import 'locater.dart';
 import 'main_page.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  setupLocator();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "asten app",
       debugShowCheckedModeBanner: false,
-      theme:
-          ThemeData(primarySwatch: Colors.blue, fontFamily: "Roboto-Regular"),
-      home: App(),
-    );
-  }
-}
-
-class App extends StatelessWidget {
-  // Create the initialization Future outside of `build`:
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      // Initialize FlutterFire:
-      future: _initialization,
-      builder: (context, snapshot) {
-        // Check for errors
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Text("Hata çıktı" + snapshot.error.toString()),
-            ),
-          );
-        }
-
-        // Once complete, show your application
-        if (snapshot.connectionState == ConnectionState.done) {
-          return MainPage();
-        }
-
-        // Otherwise, show something whilst waiting for initialization to complete
-        return Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+      theme: ThemeData(
+          primaryColor: Color.fromARGB(255, 30, 101, 177),
+          fontFamily: "Roboto-Regular"),
+      home: MultiProvider(
+        providers: [
+          BlocProvider<OrdersDetayBloc>(create: (_) => OrdersDetayBloc()),
+          BlocProvider<TodayOrdersDetayBloc>(
+              create: (_) => TodayOrdersDetayBloc()),
+          BlocProvider<CustomersBloc>(create: (_) => CustomersBloc()),
+          BlocProvider<CustomersDetayBloc>(create: (_) => CustomersDetayBloc()),
+          BlocProvider<ProductsBloc>(create: (_) => ProductsBloc()),
+          BlocProvider<ProductsDetayBloc>(create: (_) => ProductsDetayBloc()),
+          BlocProvider<DeliveriesDetayBloc>(
+              create: (_) => DeliveriesDetayBloc()),
+          BlocProvider<DeliveriesBloc>(create: (_) => DeliveriesBloc()),
+          BlocProvider<OrdersBloc>(create: (context) => OrdersBloc()),
+          BlocProvider<TodayOrdersBloc>(create: (context) => TodayOrdersBloc()),
+          ChangeNotifierProvider(create: (_) => AuthService())
+        ],
+        child: MainPage(),
+      ),
     );
   }
 }

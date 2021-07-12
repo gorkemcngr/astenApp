@@ -1,50 +1,45 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_asten_app/blocs/ordersdetay/orders_detay_bloc.dart';
-import 'package:flutter_asten_app/data/orders_repository.dart';
+import 'blocs/todayordersdetay/today_orders_detay_bloc.dart';
 import 'package:flutter_asten_app/product_detay.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'auth_service.dart';
-import 'blocs/productDetay/products_detay_bloc.dart';
-import 'models/order_detayM.dart';
 
 import 'package:turkish/turkish.dart' as turk;
 
-class OrderDetay extends StatefulWidget {
-  final int sidnum;
-  bool openOrder;
+import 'blocs/productDetay/products_detay_bloc.dart';
 
-  OrderDetay({this.sidnum, this.openOrder});
+class TodayOrderDetay extends StatefulWidget {
+  final int sidnum;
+
+  TodayOrderDetay({this.sidnum});
 
   @override
-  _OrderDetayState createState() => _OrderDetayState();
+  _TodayOrderDetayState createState() => _TodayOrderDetayState();
 }
 
-class _OrderDetayState extends State<OrderDetay> {
-  int toplam = 0;
+class _TodayOrderDetayState extends State<TodayOrderDetay> {
   bool geriDon;
+  int toplam = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    final _ordersDetayBloc = BlocProvider.of<OrdersDetayBloc>(context);
-    if (widget.openOrder == true) {
-      _ordersDetayBloc.add(FetchOpenOrdersDetayEvent(sidnum: widget.sidnum));
-    } else {
-      _ordersDetayBloc.add(FetchOrdersDetayEvent(sidnum: widget.sidnum));
-    }
+    final _ordersDetayBloc = BlocProvider.of<TodayOrdersDetayBloc>(context);
+
+    _ordersDetayBloc.add(FetchTodayOrdersDetayEvent(sidnum: widget.sidnum));
 
     print("test işlemi");
   }
 
   @override
   Widget build(BuildContext context) {
-    print(widget.openOrder.toString());
     return MultiProvider(
       providers: [
         BlocProvider<ProductsDetayBloc>(create: (_) => ProductsDetayBloc()),
@@ -67,17 +62,17 @@ class _OrderDetayState extends State<OrderDetay> {
 
   Container AppBody(BuildContext context) {
     final myAuth = Provider.of<AuthService>(context);
-    final _ordersDetayBloc = BlocProvider.of<OrdersDetayBloc>(context);
+    final _ordersDetayBloc = BlocProvider.of<TodayOrdersDetayBloc>(context);
     return Container(
       margin: EdgeInsets.all(12),
       child: BlocBuilder(
         bloc: _ordersDetayBloc,
-        builder: (context, OrdersDetayState state) {
+        builder: (context, TodayOrdersDetayState state) {
           if (state is OrdersDetayLoadingState) {
             return Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is OrdersDetayLoadedState) {
+          } else if (state is TodayOrdersDetayLoadedState) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -85,7 +80,7 @@ class _OrderDetayState extends State<OrderDetay> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      (state as OrdersDetayLoadedState)
+                      (state as TodayOrdersDetayLoadedState)
                           .orders[0]
                           .sidnum
                           .toString(),
@@ -93,7 +88,7 @@ class _OrderDetayState extends State<OrderDetay> {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      (state as OrdersDetayLoadedState).orders[0].tarih,
+                      (state as TodayOrdersDetayLoadedState).orders[0].tarih,
                       style: TextStyle(fontSize: 20),
                     ),
                   ],
@@ -110,7 +105,7 @@ class _OrderDetayState extends State<OrderDetay> {
                           fontWeight: FontWeight.bold),
                       children: <TextSpan>[
                         TextSpan(
-                          text: (state as OrdersDetayLoadedState)
+                          text: (state as TodayOrdersDetayLoadedState)
                               .orders[0]
                               .firadi,
                           style: TextStyle(
@@ -130,7 +125,7 @@ class _OrderDetayState extends State<OrderDetay> {
                           fontWeight: FontWeight.bold),
                       children: <TextSpan>[
                         TextSpan(
-                          text: (state as OrdersDetayLoadedState)
+                          text: (state as TodayOrdersDetayLoadedState)
                               .orders[0]
                               .sidnum
                               .toString(),
@@ -164,7 +159,7 @@ class _OrderDetayState extends State<OrderDetay> {
                       Expanded(
                         child: Container(
                           child: ListView.builder(
-                              itemCount: (state as OrdersDetayLoadedState)
+                              itemCount: (state as TodayOrdersDetayLoadedState)
                                   .orders
                                   .length,
                               itemBuilder: (context, index) {
@@ -188,7 +183,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                   )));
                                     },
                                     title: Text(
-                                        (state as OrdersDetayLoadedState)
+                                        (state as TodayOrdersDetayLoadedState)
                                             .orders[index]
                                             .stkadi
                                             .toString()),
@@ -209,7 +204,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                               children: <TextSpan>[
                                                 TextSpan(
                                                   text: (state
-                                                          as OrdersDetayLoadedState)
+                                                          as TodayOrdersDetayLoadedState)
                                                       .orders[index]
                                                       .sidstk
                                                       .toString(),
@@ -233,7 +228,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                               children: <TextSpan>[
                                                 TextSpan(
                                                   text:
-                                                      ((state as OrdersDetayLoadedState)
+                                                      ((state as TodayOrdersDetayLoadedState)
                                                               .orders[index]
                                                               .sidmik)
                                                           .toInt()
@@ -261,7 +256,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                     children: <TextSpan>[
                                                       TextSpan(
                                                         text: (state
-                                                                as OrdersDetayLoadedState)
+                                                                as TodayOrdersDetayLoadedState)
                                                             .orders[index]
                                                             .sidtut
                                                             .toString(),
@@ -274,32 +269,34 @@ class _OrderDetayState extends State<OrderDetay> {
                                                     ]),
                                               )
                                             : Text(""),
-                                        widget.openOrder == true &&
-                                                myAuth.durum ==
-                                                    KullaniciDurumu
-                                                        .OturumAcilmis
+                                        myAuth.durum ==
+                                                KullaniciDurumu.OturumAcilmis
                                             ? Container(
                                                 alignment:
                                                     Alignment.centerRight,
                                                 child: ElevatedButton(
                                                   onPressed: () {
                                                     _showMyDialog(
-                                                            1,
-                                                            (state as OrdersDetayLoadedState)
+                                                            0,
+                                                            (state as TodayOrdersDetayLoadedState)
                                                                 .orders[index]
                                                                 .sidsno)
-                                                        .then((value) =>
-                                                            geriDon == true
-                                                                ? Navigator.pop(
-                                                                    context)
-                                                                : null);
+                                                        .then((value) {
+                                                      sleep(const Duration(
+                                                          milliseconds: 150));
+                                                      if (geriDon == true) {
+                                                        Navigator.pop(context);
+                                                      } else {
+                                                        null;
+                                                      }
+                                                    });
                                                   },
                                                   child: Text(
-                                                      "Bugün Listesine Ekle"),
+                                                      "Bugün Listesinden Çıkar"),
                                                   style:
                                                       ElevatedButton.styleFrom(
                                                           primary:
-                                                              Colors.green),
+                                                              Colors.redAccent),
                                                 ),
                                               )
                                             : Container()
@@ -327,11 +324,11 @@ class _OrderDetayState extends State<OrderDetay> {
                         child: myAuth.durum == KullaniciDurumu.OturumAcilmis
                             ? Text(
                                 "  Toplam Tutar: " +
-                                    (state as OrdersDetayLoadedState)
+                                    (state as TodayOrdersDetayLoadedState)
                                         .orders[0]
                                         .toplam
                                         .toStringAsFixed(2) +
-                                    (state as OrdersDetayLoadedState)
+                                    (state as TodayOrdersDetayLoadedState)
                                         .orders[0]
                                         .typeOfMoney,
                                 style: TextStyle(fontSize: 25),
@@ -352,16 +349,16 @@ class _OrderDetayState extends State<OrderDetay> {
   }
 
   Widget AppBodyLandScape(BuildContext context) {
-    final _ordersDetayBloc = BlocProvider.of<OrdersDetayBloc>(context);
+    final _ordersDetayBloc = BlocProvider.of<TodayOrdersDetayBloc>(context);
     final myAuth = Provider.of<AuthService>(context);
     return BlocBuilder(
       bloc: _ordersDetayBloc,
-      builder: (context, OrdersDetayState state) {
+      builder: (context, TodayOrdersDetayState state) {
         if (state is OrdersDetayLoadingState) {
           return Center(
             child: CircularProgressIndicator(),
           );
-        } else if (state is OrdersDetayLoadedState) {
+        } else if (state is TodayOrdersDetayLoadedState) {
           return Row(
             children: [
               Container(
@@ -375,7 +372,7 @@ class _OrderDetayState extends State<OrderDetay> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          (state as OrdersDetayLoadedState)
+                          (state as TodayOrdersDetayLoadedState)
                               .orders[0]
                               .sidnum
                               .toString(),
@@ -383,7 +380,9 @@ class _OrderDetayState extends State<OrderDetay> {
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          (state as OrdersDetayLoadedState).orders[0].tarih,
+                          (state as TodayOrdersDetayLoadedState)
+                              .orders[0]
+                              .tarih,
                           style: TextStyle(fontSize: 20),
                         ),
                       ],
@@ -400,7 +399,7 @@ class _OrderDetayState extends State<OrderDetay> {
                               fontWeight: FontWeight.bold),
                           children: <TextSpan>[
                             TextSpan(
-                              text: (state as OrdersDetayLoadedState)
+                              text: (state as TodayOrdersDetayLoadedState)
                                   .orders[0]
                                   .firadi,
                               style: TextStyle(
@@ -421,7 +420,7 @@ class _OrderDetayState extends State<OrderDetay> {
                               fontWeight: FontWeight.bold),
                           children: <TextSpan>[
                             TextSpan(
-                              text: (state as OrdersDetayLoadedState)
+                              text: (state as TodayOrdersDetayLoadedState)
                                   .orders[0]
                                   .sidnum
                                   .toString(),
@@ -466,7 +465,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                 child: Container(
                                   child: ListView.builder(
                                       itemCount:
-                                          (state as OrdersDetayLoadedState)
+                                          (state as TodayOrdersDetayLoadedState)
                                               .orders
                                               .length,
                                       itemBuilder: (context, index) {
@@ -491,7 +490,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                           )));
                                             },
                                             title: Text((state
-                                                    as OrdersDetayLoadedState)
+                                                    as TodayOrdersDetayLoadedState)
                                                 .orders[index]
                                                 .stkadi
                                                 .toString()),
@@ -513,7 +512,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                       children: <TextSpan>[
                                                         TextSpan(
                                                           text: (state
-                                                                  as OrdersDetayLoadedState)
+                                                                  as TodayOrdersDetayLoadedState)
                                                               .orders[index]
                                                               .sidstk
                                                               .toString(),
@@ -540,7 +539,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                       children: <TextSpan>[
                                                         TextSpan(
                                                           text: ((state
-                                                                      as OrdersDetayLoadedState)
+                                                                      as TodayOrdersDetayLoadedState)
                                                                   .orders[index]
                                                                   .sidmik)
                                                               .toInt()
@@ -574,7 +573,7 @@ class _OrderDetayState extends State<OrderDetay> {
                                                                 TextSpan>[
                                                               TextSpan(
                                                                 text: (state
-                                                                        as OrdersDetayLoadedState)
+                                                                        as TodayOrdersDetayLoadedState)
                                                                     .orders[
                                                                         index]
                                                                     .sidtut
@@ -592,34 +591,39 @@ class _OrderDetayState extends State<OrderDetay> {
                                                 Divider(
                                                   height: 0.7,
                                                 ),
-                                                widget.openOrder == true &&
-                                                        myAuth.durum ==
-                                                            KullaniciDurumu
-                                                                .OturumAcilmis
+                                                myAuth.durum ==
+                                                        KullaniciDurumu
+                                                            .OturumAcilmis
                                                     ? Container(
                                                         alignment: Alignment
                                                             .centerRight,
                                                         child: ElevatedButton(
                                                           onPressed: () {
                                                             _showMyDialog(
-                                                                    1,
-                                                                    (state as OrdersDetayLoadedState)
+                                                                    0,
+                                                                    (state as TodayOrdersDetayLoadedState)
                                                                         .orders[
                                                                             index]
                                                                         .sidsno)
-                                                                .then((value) =>
-                                                                    geriDon ==
-                                                                            true
-                                                                        ? Navigator.pop(
-                                                                            context)
-                                                                        : null);
+                                                                .then((value) {
+                                                              sleep(const Duration(
+                                                                  milliseconds:
+                                                                      150));
+                                                              if (geriDon ==
+                                                                  true) {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              } else {
+                                                                null;
+                                                              }
+                                                            });
                                                           },
                                                           child: Text(
-                                                              "Bugün Listesine Ekle"),
+                                                              "Bugün Listesinden Çıkar"),
                                                           style: ElevatedButton
                                                               .styleFrom(
                                                                   primary: Colors
-                                                                      .green),
+                                                                      .redAccent),
                                                         ),
                                                       )
                                                     : Container()
@@ -648,11 +652,11 @@ class _OrderDetayState extends State<OrderDetay> {
                                         KullaniciDurumu.OturumAcilmis
                                     ? Text(
                                         "  Toplam Tutar: " +
-                                            (state as OrdersDetayLoadedState)
+                                            (state as TodayOrdersDetayLoadedState)
                                                 .orders[0]
                                                 .toplam
                                                 .toStringAsFixed(2) +
-                                            (state as OrdersDetayLoadedState)
+                                            (state as TodayOrdersDetayLoadedState)
                                                 .orders[0]
                                                 .typeOfMoney,
                                         style: TextStyle(fontSize: 25),
@@ -677,6 +681,7 @@ class _OrderDetayState extends State<OrderDetay> {
   }
 
   Future<void> _showMyDialog(int value, int sidsno) async {
+    print(sidsno.toString());
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -686,7 +691,7 @@ class _OrderDetayState extends State<OrderDetay> {
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Text('Bugün listesine eklemek istediğinize emin misiniz?'),
+                Text('Bugün listesinden çıkarmak istediğinize emin misiniz?'),
               ],
             ),
           ),
@@ -695,9 +700,10 @@ class _OrderDetayState extends State<OrderDetay> {
                 onPressed: () {
                   geriDon = true;
                   PostPlanToday(value, sidsno);
+
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Bugün Listesine Eklendi"),
+                    content: Text("Bugün Listesinden Çıkarıldı"),
                     duration: Duration(seconds: 2),
                   ));
                 },
@@ -724,9 +730,10 @@ class _OrderDetayState extends State<OrderDetay> {
     var url2 = Uri.parse("http://193.149.3.37/set_plantoday/");
     print(sidsno);
 
-    http.post(url2,
+    var result = http.post(url2,
         headers: {'authorization': _basicAuth},
         body: {'sidsno_id': sidsno.toString(), 'value': title.toString()});
+
     /* return http.post(
       Uri.parse('http://193.149.3.37/set_plantoday'),
       headers: <String, String>{

@@ -1,11 +1,27 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_asten_app/blocs/deliveries/deliveries_bloc.dart';
+import 'package:flutter_asten_app/blocs/orders/orders_bloc.dart';
 import 'package:flutter_asten_app/deliveries_detay.dart';
-import 'package:flutter_asten_app/models/orders.dart';
-import 'models/deliveries.dart';
+import 'package:flutter_asten_app/models/order_list.dart';
+import 'package:flutter_asten_app/product_list.dart';
+import 'package:flutter_asten_app/today_order_list.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'auth_service.dart';
+import 'customer_list.dart';
+import 'deliveries_listesi.dart';
+import 'kullanici_giris.dart';
+import 'models/deliveriesM.dart';
+import 'models/delivery_list.dart';
 import 'order_detay.dart';
 import 'package:turkish/turkish.dart' as turk;
+import 'package:http/http.dart' as http;
 import 'dart:math' as mat;
+
+import 'orders_listesi.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -14,25 +30,23 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool _loadingproducts = true;
-  int _perPage = 20;
-  DocumentSnapshot _lastDocument;
+  bool _loadingproducts = false;
   ScrollController _scrollController = ScrollController();
-  bool _gettingMoreProducts = false;
-  bool _moreProductsAvailable = true;
 
   //
   bool _loadingdeliveries = true;
-  int _perPage2 = 20;
-  DocumentSnapshot _lastDocument2;
   ScrollController _scrollController2 = ScrollController();
-  bool _gettingMoreDeliveries = false;
-  bool _moreDeliveriesAvailable = true;
 
   //
-  List<Orders> siparisler;
-  List<Deliveries> deliveries;
+  List<OrderList> orders;
+  static int orderPage = 0;
+  static int orderPage2 = 0;
+  static int deliveryPage = 0;
+  static int deliveryPage2 = 0;
+  bool orderArama = false;
+  bool deliveryArama = false;
+
+  List<DeliveryList> deliveries;
   TabController tabController;
   var formKey = GlobalKey<FormState>();
   var formKey2 = GlobalKey<FormState>();
@@ -43,436 +57,348 @@ class _MainPageState extends State<MainPage>
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
-    _getProducts();
-    _getDeliveries();
-    siparisler = [];
+
+    tabController = TabController(length: 5, vsync: this);
+
     deliveries = [];
+    orders = [];
+  }
 
-    _scrollController.addListener(() {
-      double maxScroll = _scrollController.position.maxScrollExtent;
-      double currentScroll = _scrollController.position.pixels;
-      double delta = MediaQuery.of(context).size.height * 0.25;
-
-      if (maxScroll - currentScroll <= delta) {
-        _getMoreProduct();
-      }
-    });
-
-    //
-    _scrollController2.addListener(() {
-      double maxScroll2 = _scrollController2.position.maxScrollExtent;
-      double currentScroll2 = _scrollController2.position.pixels;
-      double delta2 = MediaQuery.of(context).size.height * 0.25;
-
-      if (maxScroll2 - currentScroll2 <= delta2) {
-        _getMoreDeliveries();
-      }
-    });
-    //
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final myAuth = Provider.of<AuthService>(context);
+    print("build çalıştı");
+    /* switch (myAuth.durum) {
+      case KullaniciDurumu.OturumAciliyor:
+        return Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      case KullaniciDurumu.OturumAcilmis: */
     return Scaffold(
         appBar: AppBar(
+          actions: [
+            myAuth.durum == KullaniciDurumu.OturumAcilmis
+                ? IconButton(
+                    icon: Icon(
+                      Icons.logout,
+                      size: 32,
+                    ),
+                    onPressed: () async {
+                      await myAuth.signOut();
+                    })
+                : IconButton(
+                    icon: Icon(
+                      Icons.login,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      GirisYapDialog(context, myAuth);
+                    })
+          ],
           bottom: tabBarim(),
           title: Text(
-            "asten",
-            style: TextStyle(fontSize: 35, fontStyle: FontStyle.italic),
+            "ASTENCUBE ❒",
+            style: TextStyle(
+                fontSize: 35,
+                fontStyle: FontStyle.italic,
+                fontFamily: "Roboto-Regular"),
           ),
         ),
+        resizeToAvoidBottomInset: false,
         body: TabBarView(controller: tabController, children: [
-          _loadingproducts == true
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : ordersPage(context),
-          _loadingdeliveries == true
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : DeliveriesPage(context),
+          Orders(),
+          Deliveries(),
+          Customers(),
+          Products(),
+          TodayOrders(),
         ]));
+    /*
+      case KullaniciDurumu.OturumAcilmamis:
+        return KullaniciGiris();
+    } */
   }
 
-  Column DeliveriesPage(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 100,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                height: 60,
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: Form(
-                  key: formKey2,
-                  child: TextFormField(
-                    onChanged: (value) {
-                      if (value.length == 0) {
-                        deliveries.clear();
-                        _getDeliveries();
-                      }
-                    },
-                    autovalidateMode: AutovalidateMode.always,
-                    decoration: InputDecoration(
-                        labelText: "Firma adını veya Sevkiyat No. giriniz",
-                        hintText: "Firma Adı/Sevkiyat No.",
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue),
-                            borderRadius: BorderRadius.circular(25)),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.orange),
-                            borderRadius: BorderRadius.circular(25)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25))),
-                    onSaved: (value) {
-                      try {
-                        arananSevkiyat = int.parse(value);
-                      } catch (e) {
-                        arananSevkiyat = value;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    if (formKey2.currentState.validate()) {
-                      formKey2.currentState.save();
+  ///////////////////////////////////////
 
-                      DeliveriesAramaYap(arananSevkiyat);
-                    } else {
-                      deliveries.clear();
-                      _getDeliveries();
-                    }
-                  },
-                  child: Text(
-                    "Ara",
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-              child: deliveries.length == 0
-                  ? Center(
-                      child: Text("No Products to show"),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController2,
-                      itemCount: deliveries.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          elevation: 4,
-                          child: ListTile(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => DeliveriesDetay(
-                                            deliveries: deliveries[index],
-                                          )));
-                            },
-                            title: Text(deliveries[index].firadi),
-                            subtitle: Text(deliveries[index].tarih),
-                          ),
-                        );
-                      })),
-        ),
-      ],
-    );
-  }
-
-  Column ordersPage(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 100,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                height: 60,
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: Form(
-                  key: formKey,
-                  child: TextFormField(
-                    onChanged: (value) {
-                      if (value.length == 0) {
-                        siparisler.clear();
-                        _getProducts();
-                      }
-                    },
-                    autovalidateMode: AutovalidateMode.always,
-                    decoration: InputDecoration(
-                        labelText: "Firma Adını veya Sipariş Numarası Giriniz",
-                        hintText: "Firma Adı/Sipariş No",
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue),
-                            borderRadius: BorderRadius.circular(25)),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.orange),
-                            borderRadius: BorderRadius.circular(25)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25))),
-                    onSaved: (value) {
-                      try {
-                        arananSiparis = int.parse(value);
-                      } catch (e) {
-                        arananSiparis = value;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    if (formKey.currentState.validate()) {
-                      formKey.currentState.save();
-
-                      orderAramaYap(arananSiparis);
-                    } else {
-                      siparisler.clear();
-                      _getProducts();
-                    }
-                  },
-                  child: Text(
-                    "Ara",
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-              child: siparisler.length == 0
-                  ? Center(
-                      child: Text("No Products to show"),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      itemCount: siparisler.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          elevation: 4,
-                          child: ListTile(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => OrderDetay(
-                                            order: siparisler[index],
-                                          )));
-                            },
-                            title: Text(siparisler[index].firadi),
-                            subtitle: Text(siparisler[index].tarih),
-                          ),
-                        );
-                      })),
-        ),
-      ],
-    );
-  }
-
-  _getMoreProduct() async {
-    print("_getMoreProducts called");
-
-    if (_moreProductsAvailable == false) {
-      print("No More Products");
-      return;
-    }
-    if (_gettingMoreProducts == true) {
-      return;
-    }
-
-    _gettingMoreProducts = true;
-
-    Query q = _firestore
-        .collection("orders")
-        .orderBy("epoch", descending: true)
-        .startAfter([_lastDocument.data()["epoch"]]).limit(_perPage);
-
-    QuerySnapshot querySnapshot = await q.get();
-
-    if (querySnapshot.docs.length < _perPage) {
-      _moreProductsAvailable = false;
-    }
-    _lastDocument = querySnapshot.docs[querySnapshot.docs.length - 1];
-    for (var dokuman in querySnapshot.docs) {
-      addSiparisler(dokuman);
-    }
-    setState(() {});
-    _gettingMoreProducts = false;
-  }
-
-  _getProducts() async {
-    Query q = _firestore
-        .collection("orders")
-        .orderBy("epoch", descending: true)
-        .limit(_perPage);
-    if (mounted) {
-      setState(() {
-        _loadingproducts = true;
-      });
-    }
-    QuerySnapshot querySnapshot = await q.get();
-
-    for (var dokuman in querySnapshot.docs) {
-      addSiparisler(dokuman);
-    }
-
-    _lastDocument = querySnapshot.docs[querySnapshot.docs.length - 1];
-    if (mounted) {
-      setState(() {
-        _loadingproducts = false;
-      });
-    }
-  }
-
-  _getDeliveries() async {
-    Query q = _firestore
-        .collection("deliveries")
-        .orderBy("epoch", descending: true)
-        .limit(_perPage2);
+  _getDeliveries(int index) async {
+    List<DeliveryList> sipler = [];
     if (mounted) {
       setState(() {
         _loadingdeliveries = true;
       });
     }
-    QuerySnapshot querySnapshot = await q.get();
-
-    for (var dokuman in querySnapshot.docs) {
-      addDeliveries(dokuman);
+    var url2 = Uri.parse("http://45.139.220.15:3200/deliverylist/$index");
+    final response = await http.get(url2);
+    List decodedJson = json.decode(response.body);
+    for (int i = 0; i < decodedJson.length; i++) {
+      sipler.add(DeliveryList.fromJson(decodedJson[i]));
     }
 
-    _lastDocument2 = querySnapshot.docs[querySnapshot.docs.length - 1];
     if (mounted) {
       setState(() {
         _loadingdeliveries = false;
+        deliveries.addAll(sipler);
+        deliveryPage++;
       });
     }
   }
 
-  _getMoreDeliveries() async {
-    print("_getMoreDeliveries called");
+  _getMoreDeliveries(int index) async {
+    List<DeliveryList> sevkiyatlar = [];
 
-    if (_moreDeliveriesAvailable == false) {
-      print("No More Deliveries");
-      return;
+    var url2 = Uri.parse("http://45.139.220.15:3200/deliverylist/$index");
+    final response = await http.get(url2);
+    List decodedJson = json.decode(response.body);
+    for (int i = 0; i < decodedJson.length; i++) {
+      sevkiyatlar.add(DeliveryList.fromJson(decodedJson[i]));
     }
-    if (_gettingMoreDeliveries == true) {
-      return;
+    if (mounted) {
+      setState(() {
+        _loadingproducts = false;
+        deliveries.addAll(sevkiyatlar);
+        orderPage++;
+      });
     }
-
-    _gettingMoreDeliveries = true;
-
-    Query q = _firestore
-        .collection("deliveries")
-        .orderBy("epoch", descending: true)
-        .startAfter([_lastDocument2.data()["epoch"]]).limit(_perPage2);
-
-    QuerySnapshot querySnapshot = await q.get();
-
-    if (querySnapshot.docs.length < _perPage2) {
-      _moreDeliveriesAvailable = false;
-    }
-    _lastDocument2 = querySnapshot.docs[querySnapshot.docs.length - 1];
-    for (var dokuman in querySnapshot.docs) {
-      addDeliveries(dokuman);
-    }
-
-    setState(() {});
-    _gettingMoreDeliveries = false;
   }
 
-  void orderAramaYap(var arananSiparis) async {
+  void GirisYapDialog(BuildContext context, myAuth) {
+    var _formKey2 = GlobalKey<FormState>();
+    String user_email;
+    String user_password;
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            children: [
+              Form(
+                key: _formKey2,
+                child: Column(
+                  children: [
+                    Container(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: Icon(Icons.close))),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Giriş Yap",
+                        style: TextStyle(fontSize: 26),
+                      ),
+                      margin: EdgeInsets.only(left: 10),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        keyboardType: TextInputType.emailAddress,
+                        onSaved: (value) {
+                          user_email = value;
+                        },
+                        validator: (value) {
+                          return validateEmail(value);
+                        },
+                        decoration: InputDecoration(
+                            labelText: 'Email',
+                            hintText: 'Email Giriniz',
+                            border: OutlineInputBorder()),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        onSaved: (value) {
+                          user_password = value;
+                        },
+                        obscureText: true,
+                        decoration: InputDecoration(
+                            labelText: 'Şifre',
+                            hintText: 'Şifrenizi Giriniz',
+                            border: OutlineInputBorder()),
+                      ),
+                    ),
+                    myAuth.oturum == OturumAcma.yanlisPassword
+                        ? Text("Yanlış kullanıcı adı veya şifre",
+                            style: TextStyle(color: Colors.red))
+                        : SizedBox(),
+                    ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey2.currentState.validate()) {
+                            _formKey2.currentState.save();
+                            await myAuth.signInUserWithEmailandPassword(
+                                user_email, user_password);
+                            if (await myAuth.oturum ==
+                                OturumAcma.yanlisPassword) {
+                              _showMyDialog();
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("Giriş Başarılı"),
+                                duration: Duration(seconds: 2),
+                              ));
+                              Navigator.pop(context);
+                            }
+                          }
+                        },
+                        child: Text("Giriş Yap"))
+                  ],
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hata'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Yanlış kullanıcı Adı Ya da Şifre'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Geri Dön'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String validateEmail(String value) {
+    Pattern pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regex = new RegExp(pattern);
+    return (!regex.hasMatch(value)) ? "Lütfen Geçerli Bir email giriniz" : null;
+  }
+
+/*
+  void orderAramaYapJson(var arananSiparis) async {
+    orderArama = true;
     if (arananSiparis is String) {
-      arananSiparis = turk.turkish.toUpperCase(arananSiparis);
-      var stringSorgula = await _firestore
-          .collection("orders")
-          .orderBy("firadi")
-          .startAt([arananSiparis]).endAt([arananSiparis + "\uf8ff"]).get();
+      List<OrderList> sipler = [];
 
-      siparisler.clear();
-
-      for (var dokuman in stringSorgula.docs) {
-        addSiparisler(dokuman);
+      var url2 =
+          Uri.parse("http://45.139.220.15:3200/search/orders/$arananSiparis");
+      final response = await http.get(url2);
+      List decodedJson = json.decode(response.body);
+      print(decodedJson.toString());
+      for (int i = 0; i < decodedJson.length; i++) {
+        sipler.add(OrderList.fromJson(decodedJson[i]));
+        listeElemanDuzenle();
       }
+
+      orders.clear();
+      orders.addAll(sipler);
     } else if (arananSiparis is int) {
-      Query q = _firestore.collection("orders").orderBy("firadi");
-      QuerySnapshot querySnapshot = await q.get();
+      List<OrderList> sipler = [];
 
-      var stringSorgula = await _firestore
-          .collection("orders")
-          .where('sipnum', isEqualTo: arananSiparis)
-          .get();
-
-      siparisler.clear();
-      for (var dokuman in stringSorgula.docs) {
-        addSiparisler(dokuman);
+      var url2 =
+          Uri.parse("http://45.139.220.15:3200/search/orders/$arananSiparis");
+      final response = await http.get(url2);
+      List decodedJson = json.decode(response.body);
+      for (int i = 0; i < decodedJson.length; i++) {
+        sipler.add(OrderList.fromJson(decodedJson[i]));
+        listeElemanDuzenle();
       }
+
+      orders.clear();
+      orders.addAll(sipler);
     }
 
     setState(() {});
-  }
+  } */
+/*
+  void DeliveryAramaYapJson(var arananSiparis) async {
+    deliveryArama = true;
+    if (arananSiparis is String) {
+      List<DeliveryList> sevkiyatlar = [];
 
-  void addDeliveries(QueryDocumentSnapshot dokuman) {
-    deliveries.add(Deliveries(
-        dokuman.data()["firadi"],
-        dokuman.data()["firkod"],
-        dokuman.data()["sednum"],
-        dokuman.data()["sevirs"],
-        dokuman.data()["sevitr"],
-        dokuman.data()["sevtad"],
-        dokuman.data()["sipmyt"],
-        dokuman.data()["stpadi"],
-        tarihDonustur(dokuman.data()["tarih"]),
-        DDetay.fromMap(dokuman.data()["detay"])));
-  }
+      var url2 = Uri.parse(
+          "http://45.139.220.15:3200/search/deliveries/$arananSiparis");
+      final response = await http.get(url2);
+      List decodedJson = json.decode(response.body);
 
-  void addSiparisler(QueryDocumentSnapshot dokuman) {
-    siparisler.add(Orders(
-        dokuman.data()["firadi"],
-        dokuman.data()["firkod"],
-        dokuman.data()["sipnum"],
-        tarihDonustur(dokuman.data()["tarih"]),
-        Detay.fromMap(dokuman.data()["detay"])));
-  }
-
-  void DeliveriesAramaYap(var arananSevkiyat) async {
-    if (arananSevkiyat is String) {
-      Query q = _firestore.collection("deliveries").orderBy("firadi");
-      QuerySnapshot querySnapshot = await q.get();
-      arananSevkiyat = turk.turkish.toUpperCase(arananSevkiyat);
-      var stringSorgula = await _firestore
-          .collection("deliveries")
-          .orderBy("firadi")
-          .startAt([arananSevkiyat]).endAt([arananSevkiyat + "\uf8ff"]).get();
-      deliveries.clear();
-      for (var dokuman in stringSorgula.docs) {
-        addDeliveries(dokuman);
+      for (int i = 0; i < decodedJson.length; i++) {
+        sevkiyatlar.add(DeliveryList.fromJson(decodedJson[i]));
+        listeElemanDuzenle2();
       }
-    } else if (arananSevkiyat is int) {
-      Query q = _firestore.collection("deliveries").orderBy("firadi");
-      QuerySnapshot querySnapshot = await q.get();
-
-      var stringSorgula = await _firestore
-          .collection("deliveries")
-          .where('sednum', isEqualTo: arananSevkiyat)
-          .get();
 
       deliveries.clear();
-      for (var dokuman in stringSorgula.docs) {
-        addDeliveries(dokuman);
+      deliveries.addAll(sevkiyatlar);
+    } else if (arananSiparis is int) {
+      List<DeliveryList> sevkiyatlar = [];
+
+      var url2 = Uri.parse(
+          "http://45.139.220.15:3200/search/deliveries/$arananSiparis");
+      final response = await http.get(url2);
+      List decodedJson = json.decode(response.body);
+      for (int i = 0; i < decodedJson.length; i++) {
+        sevkiyatlar.add(DeliveryList.fromJson(decodedJson[i]));
+        listeElemanDuzenle2();
       }
+
+      deliveries.clear();
+      deliveries.addAll(sevkiyatlar);
     }
 
     setState(() {});
+  } */
+/*
+  listeElemanDuzenle() async {
+    List<OrderList> yeniSiparisler = [];
+    yeniSiparisler = await orders;
+    for (int i = 1; i < yeniSiparisler.length; i++) {
+      if (yeniSiparisler[i].sidnum == yeniSiparisler[i - 1].sidnum) {
+        yeniSiparisler.removeAt(i);
+      } else {}
+    }
+    return yeniSiparisler;
   }
+
+  listeElemanDuzenle2() async {
+    List<DeliveryList> yeniSevkiyatlar = [];
+    yeniSevkiyatlar = await deliveries;
+    for (int i = 1; i < yeniSevkiyatlar.length; i++) {
+      if (yeniSevkiyatlar[i].sednum == yeniSevkiyatlar[i - 1].sednum) {
+        yeniSevkiyatlar.removeAt(i);
+      } else {}
+    }
+    return yeniSevkiyatlar;
+  }
+
+  String tarihDonustur(String tarih) {
+    var arr = tarih.split(' ');
+    String tarih1 = arr[0];
+    var arr1 = tarih1.split('-');
+    String tarihSonHal = arr1[2] + "/" + arr1[1] + "/" + arr1[0];
+    return tarihSonHal;
+  } */
 
   TabBar tabBarim() {
     return TabBar(
@@ -484,10 +410,10 @@ class _MainPageState extends State<MainPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(Icons.update),
+                  //  Icon(Icons.update),
                   Text(
-                    "Siparişler",
-                    style: TextStyle(fontSize: 20),
+                    "Sip.",
+                    style: TextStyle(fontSize: 15),
                   ),
                 ],
               ),
@@ -498,10 +424,53 @@ class _MainPageState extends State<MainPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(Icons.directions_car),
+                  //Icon(Icons.directions_car),
+
                   Text(
-                    "Sevkiyatlar",
-                    style: TextStyle(fontSize: 20),
+                    "Sevk.",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            child: Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //   Icon(Icons.person),
+                  Text(
+                    "Müşt.",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            child: Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //  Icon(Icons.person),
+                  Text(
+                    "Ürün",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            child: Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //  Icon(Icons.person),
+                  Text(
+                    "Bugün",
+                    style: TextStyle(fontSize: 15),
                   ),
                 ],
               ),
@@ -509,18 +478,4 @@ class _MainPageState extends State<MainPage>
           ),
         ]);
   }
-
-  String tarihDonustur(String tarih) {
-    var arr = tarih.split(' ');
-    String tarih1 = arr[0];
-    var arr1 = tarih1.split('-');
-    String tarihSonHal = arr1[2] + "/" + arr1[1] + "/" + arr1[0];
-    return tarihSonHal;
-  }
 }
-
-/*
-
-
-
- */
