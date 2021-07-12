@@ -25,6 +25,11 @@ class _ProductDetayState extends State<ProductDetay> {
     super.initState();
     final _productsDetayBloc = BlocProvider.of<ProductsDetayBloc>(context);
     _productsDetayBloc.add(FetchProductsDetayEvent(stkkod: widget.stkkod));
+<<<<<<< HEAD
+=======
+
+    print("test işlemi");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
   }
 
   @override
@@ -134,7 +139,11 @@ class _ProductDetayState extends State<ProductDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return CircularProgressIndicator();
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),
@@ -251,7 +260,11 @@ class _ProductDetayState extends State<ProductDetay> {
             ],
           );
         } else {
+<<<<<<< HEAD
           return Container();
+=======
+          return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
         }
       },
     );

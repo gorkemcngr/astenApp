@@ -113,7 +113,11 @@ class OrdersRepository {
         orders.add(orders2[i]);
         orders2[i].tarih = tarihDonustur(orders2[i].siptar.toString());
       }
+<<<<<<< HEAD
 
+=======
+      print(ordersDetay[0].firadi);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
       return orders;
     } catch (e) {
       arananOrder = name;
@@ -156,7 +160,11 @@ class OrdersRepository {
         orders.add(orders2[i]);
         orders2[i].tarih = tarihDonustur(orders2[i].siptar.toString());
       }
+<<<<<<< HEAD
 
+=======
+      print(ordersDetay[0].firadi);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
       return orders;
     } catch (e) {
       arananOrder = name;

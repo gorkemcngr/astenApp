@@ -451,7 +451,11 @@ class _DeliveriesDetayState extends State<DeliveriesDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),
@@ -939,7 +943,11 @@ class _DeliveriesDetayState extends State<DeliveriesDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),

@@ -34,6 +34,11 @@ class _TodayOrderDetayState extends State<TodayOrderDetay> {
     final _ordersDetayBloc = BlocProvider.of<TodayOrdersDetayBloc>(context);
 
     _ordersDetayBloc.add(FetchTodayOrdersDetayEvent(sidnum: widget.sidnum));
+<<<<<<< HEAD
+=======
+
+    print("test işlemi");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
   }
 
   @override
@@ -281,7 +286,11 @@ class _TodayOrderDetayState extends State<TodayOrderDetay> {
                                                                 .sidsno)
                                                         .then((value) {
                                                       sleep(const Duration(
+<<<<<<< HEAD
                                                           milliseconds: 300));
+=======
+                                                          milliseconds: 150));
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
                                                       if (geriDon == true) {
                                                         Navigator.pop(context);
                                                       } else {
@@ -339,7 +348,11 @@ class _TodayOrderDetayState extends State<TodayOrderDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),
@@ -672,13 +685,21 @@ class _TodayOrderDetayState extends State<TodayOrderDetay> {
             ],
           );
         } else {
+<<<<<<< HEAD
           return Container();
+=======
+          return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
         }
       },
     );
   }
 
   Future<void> _showMyDialog(int value, int sidsno) async {
+<<<<<<< HEAD
+=======
+    print(sidsno.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -725,6 +746,10 @@ class _TodayOrderDetayState extends State<TodayOrderDetay> {
         'Basic ' + base64Encode(utf8.encode('$_username:$_password'));
 
     var url2 = Uri.parse("http://193.149.3.37/set_plantoday/");
+<<<<<<< HEAD
+=======
+    print(sidsno);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
 
     var result = http.post(url2,
         headers: {'authorization': _basicAuth},

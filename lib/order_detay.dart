@@ -38,10 +38,19 @@ class _OrderDetayState extends State<OrderDetay> {
     } else {
       _ordersDetayBloc.add(FetchOrdersDetayEvent(sidnum: widget.sidnum));
     }
+<<<<<<< HEAD
+=======
+
+    print("test işlemi");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
   }
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
+=======
+    print(widget.openOrder.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     return MultiProvider(
       providers: [
         BlocProvider<ProductsDetayBloc>(create: (_) => ProductsDetayBloc()),
@@ -341,7 +350,11 @@ class _OrderDetayState extends State<OrderDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),
@@ -667,7 +680,11 @@ class _OrderDetayState extends State<OrderDetay> {
             ],
           );
         } else {
+<<<<<<< HEAD
           return Container();
+=======
+          return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
         }
       },
     );
@@ -719,6 +736,10 @@ class _OrderDetayState extends State<OrderDetay> {
         'Basic ' + base64Encode(utf8.encode('$_username:$_password'));
 
     var url2 = Uri.parse("http://193.149.3.37/set_plantoday/");
+<<<<<<< HEAD
+=======
+    print(sidsno);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
 
     http.post(url2,
         headers: {'authorization': _basicAuth},

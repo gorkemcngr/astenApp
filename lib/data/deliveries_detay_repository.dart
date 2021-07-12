@@ -22,10 +22,18 @@ class DeliveriesDetayRepository {
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
 
     for (int i = 0; i < decodedJson.length; i++) {
+<<<<<<< HEAD
       deliveries2.add(DeliveriesM.fromJson(decodedJson[i]));
       toplam = toplam + deliveries2[i].sidufy;
     }
 
+=======
+      print("şuan burada1");
+      deliveries2.add(DeliveriesM.fromJson(decodedJson[i]));
+      toplam = toplam + deliveries2[i].sidufy;
+    }
+    print("şuan burada2");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     deliveries2[0].toplam = toplam;
     deliveries2[0].tarih = tarihDonustur(deliveries2[0].sevitr.toString());
     var arr = deliveries2[0].sevirs.toString().split('/');
@@ -44,6 +52,10 @@ class DeliveriesDetayRepository {
     } else if (deliveriesDetay[0].sidpbr == "USD") {
       deliveriesDetay[0].typeOfMoney = "\$";
     }
+<<<<<<< HEAD
+=======
+    print(deliveriesDetay[0].firadi);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
 
     return deliveriesDetay;
   }

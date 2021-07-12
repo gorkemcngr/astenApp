@@ -11,6 +11,10 @@ class OrdersDetayRepository {
   List<OrderDetayM> ordersDetay = [];
 
   Future<List<OrderDetayM>> getOrderListDetay(int sidnum) async {
+<<<<<<< HEAD
+=======
+    print("sidnum burada" + sidnum.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     double toplam = 0;
     List<OrderDetayM> orders2 = [];
     ordersDetay.clear();
@@ -19,12 +23,23 @@ class OrdersDetayRepository {
         await http.get(url2, headers: {'authorization': _basicAuth});
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
 
+<<<<<<< HEAD
     for (int i = 0; i < decodedJson.length; i++) {
       orders2.add(OrderDetayM.fromJson(decodedJson[i]));
 
       toplam = toplam + orders2[i].sidtut;
     }
 
+=======
+    print(decodedJson);
+
+    for (int i = 0; i < decodedJson.length; i++) {
+      orders2.add(OrderDetayM.fromJson(decodedJson[i]));
+      print("mmmmm");
+      toplam = toplam + orders2[i].sidtut;
+    }
+    print("firmöa dıı");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     orders2[0].toplam = toplam;
     for (int i = 0; i < orders2.length; i++) {
       ordersDetay.add(orders2[i]);
@@ -38,10 +53,18 @@ class OrdersDetayRepository {
       ordersDetay[0].typeOfMoney = "\$";
     }
 
+<<<<<<< HEAD
+=======
+    print(ordersDetay[0].firadi);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     return ordersDetay;
   }
 
   Future<List<OrderDetayM>> getOpenOrderListDetay(int sidnum) async {
+<<<<<<< HEAD
+=======
+    print("sidnum burada" + sidnum.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     double toplam = 0;
     List<OrderDetayM> orders2 = [];
     ordersDetay.clear();
@@ -51,12 +74,23 @@ class OrdersDetayRepository {
         await http.get(url2, headers: {'authorization': _basicAuth});
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
 
+<<<<<<< HEAD
     for (int i = 0; i < decodedJson.length; i++) {
       orders2.add(OrderDetayM.fromJson(decodedJson[i]));
 
       toplam = toplam + orders2[i].sidtut;
     }
 
+=======
+    print(decodedJson);
+
+    for (int i = 0; i < decodedJson.length; i++) {
+      orders2.add(OrderDetayM.fromJson(decodedJson[i]));
+      print("mmmmm");
+      toplam = toplam + orders2[i].sidtut;
+    }
+    print("firmöa dıı");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     orders2[0].toplam = toplam;
     for (int i = 0; i < orders2.length; i++) {
       ordersDetay.add(orders2[i]);
@@ -70,6 +104,10 @@ class OrdersDetayRepository {
       ordersDetay[0].typeOfMoney = "\$";
     }
 
+<<<<<<< HEAD
+=======
+    print(ordersDetay[0].firadi);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     return ordersDetay;
   }
 }

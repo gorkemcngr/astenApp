@@ -108,6 +108,10 @@ class KullaniciGiris extends StatelessWidget {
                         formKey.currentState.save();
                         await myAuth.signInUserWithEmailandPassword(
                             user_email, user_password);
+<<<<<<< HEAD
+=======
+                        print(myAuth.oturum);
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
                       }
                     },
                     child: Text(

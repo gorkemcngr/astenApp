@@ -12,7 +12,11 @@ class TodayOrdersDetayRepository {
 
   Future<List<TodayOrderDetayM>> getTodayOrderDetayListDetay(int sidnum) async {
     double toplam = 0;
+<<<<<<< HEAD
 
+=======
+    print("sidnum burada" + sidnum.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     List<TodayOrderDetayM> orders2 = [];
     ordersDetay.clear();
     var url2 = Uri.parse("http://193.149.3.37/orders/" +
@@ -22,9 +26,19 @@ class TodayOrdersDetayRepository {
         await http.get(url2, headers: {'authorization': _basicAuth});
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
 
+<<<<<<< HEAD
     for (int i = 0; i < decodedJson.length; i++) {
       orders2.add(TodayOrderDetayM.fromJson(decodedJson[i]));
 
+=======
+    print(decodedJson);
+
+    for (int i = 0; i < decodedJson.length; i++) {
+      print("aşama 1");
+      orders2.add(TodayOrderDetayM.fromJson(decodedJson[i]));
+      print("aşama 2");
+      print(orders2[i].sidtut.toString());
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
       toplam = toplam + orders2[i].sidtut;
     }
 

@@ -21,7 +21,13 @@ class ProductsDetayRepository {
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
 
     for (int i = 0; i < decodedJson.length; i++) {
+<<<<<<< HEAD
       productsDetay2.add(ProductDetayM.fromJson(decodedJson[i]));
+=======
+      print("aha geldii");
+      productsDetay2.add(ProductDetayM.fromJson(decodedJson[i]));
+      print("aha geldii222");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     }
     int counter = 1;
     for (int i = 0; i < productsDetay2.length; i++) {

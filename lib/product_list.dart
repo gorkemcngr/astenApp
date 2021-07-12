@@ -109,6 +109,10 @@ class _ProductsState extends State<Products> {
                   );
                 }
                 if (state is ProductsLoadedState) {
+<<<<<<< HEAD
+=======
+                  print("girdi");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
                   return ListView.builder(
                       controller: _scrollController,
                       itemCount: state.products.length,
@@ -136,7 +140,12 @@ class _ProductsState extends State<Products> {
                         );
                       });
                 } else {
+<<<<<<< HEAD
                   return Container();
+=======
+                  print("asaasassasa");
+                  return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
                 }
               },
             ),

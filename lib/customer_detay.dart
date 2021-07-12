@@ -24,6 +24,11 @@ class _CustomerDetayState extends State<CustomerDetay> {
     super.initState();
     final _customersDetayBloc = BlocProvider.of<CustomersDetayBloc>(context);
     _customersDetayBloc.add(FetchCustomersDetayEvent(firkod: widget.sidnum));
+<<<<<<< HEAD
+=======
+
+    print("test işlemi");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
   }
 
   @override
@@ -273,7 +278,11 @@ class _CustomerDetayState extends State<CustomerDetay> {
               ],
             );
           } else {
+<<<<<<< HEAD
             return Container();
+=======
+            return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
           }
         },
       ),
@@ -534,7 +543,11 @@ class _CustomerDetayState extends State<CustomerDetay> {
             ],
           );
         } else {
+<<<<<<< HEAD
           return Container();
+=======
+          return null;
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
         }
       },
     );

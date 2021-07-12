@@ -62,7 +62,11 @@ class DeliveriesRepository {
     final response =
         await http.get(url2, headers: {'authorization': _basicAuth});
     List decodedJson = json.decode(utf8.decode(response.bodyBytes));
+<<<<<<< HEAD
 
+=======
+    print("a");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     for (int i = 0; i < decodedJson.length; i++) {
       deliveries.add(DeliveryList.fromJson(decodedJson[i]));
     }

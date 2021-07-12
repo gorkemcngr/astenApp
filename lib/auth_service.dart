@@ -72,6 +72,10 @@ class AuthService with ChangeNotifier {
               "[firebase_auth/wrong-password] The password is invalid or the user does not have a password." ||
           e.toString() ==
               "[firebase_auth/user-not-found] There is no user record corresponding to this identifier. The user may have been deleted.") {
+<<<<<<< HEAD
+=======
+        print("ryaaanliş");
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
         _oturum = OturumAcma.yanlisPassword;
       }
       durum = KullaniciDurumu.OturumAcilmamis;

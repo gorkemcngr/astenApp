@@ -28,6 +28,11 @@ class CustomersDetayRepository {
       customersDetay[i].adresCount = counter++;
     }
 
+<<<<<<< HEAD
+=======
+    print(customersDetay[0].firadi);
+
+>>>>>>> da380f049d5fc7b8a8f770711d720d6c9fa1919a
     return customersDetay;
   }
 }
